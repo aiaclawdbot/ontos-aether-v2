@@ -68,6 +68,81 @@ function Stat({ value, label, delay = 0 }: { value: string; label: string; delay
   );
 }
 
+/* ───────────────────────── COPILOT PROVENANCE (Section 6) ───────────────────────── */
+function CopilotProvenance() {
+  const [open, setOpen] = useState(false);
+  const provenanceNodes = [
+    { node: 'JPY/USD 10d Volatility', value: '1.8σ', threshold: '> 1.5σ', source: 'SentimenTrader + BOJ', reliability: 0.89 },
+    { node: 'Smart Money Confidence', value: '28%', threshold: '< 30%', source: 'SentimenTrader', reliability: 0.93 },
+    { node: 'XLK McClellan Oscillator', value: '-45', threshold: '< -40', source: 'SentimenTrader', reliability: 0.87 },
+    { node: 'VIX Term Structure', value: 'Flattening', threshold: '== Flattening', source: 'CBOE', reliability: 0.91 },
+  ];
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          background: 'rgba(99,102,241,0.1)', border: `1px solid rgba(99,102,241,0.3)`,
+          borderRadius: 6, padding: '8px 14px', cursor: 'pointer', color: PURPLE,
+          fontSize: '0.8rem', fontWeight: 600, width: '100%', textAlign: 'center',
+          fontFamily: "'JetBrains Mono', monospace", transition: 'all 0.2s ease',
+        }}
+      >
+        {open ? '▾ Hide' : '▸ View'} Mathematical Provenance
+      </button>
+
+      {open && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          transition={{ duration: 0.3 }}
+          style={{ marginTop: 12, overflow: 'hidden' }}
+        >
+          <div style={{
+            background: 'rgba(10,14,23,0.9)', border: `1px solid ${BORDER}`,
+            borderRadius: 8, padding: 16, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem',
+          }}>
+            <div style={{ color: MUTED, marginBottom: 10, letterSpacing: '0.1em', fontSize: '0.65rem' }}>
+              ONTOS PROVENANCE CHAIN — 4-HOP GRAPH TRAVERSAL
+            </div>
+            {provenanceNodes.map((n, i) => (
+              <div key={i} style={{
+                display: 'grid', gridTemplateColumns: '1fr auto auto auto',
+                gap: 12, padding: '8px 0', borderBottom: i < provenanceNodes.length - 1 ? `1px solid ${BORDER}` : 'none',
+                alignItems: 'center',
+              }}>
+                <div>
+                  <div style={{ color: '#E2E8F0', fontWeight: 500 }}>{n.node}</div>
+                  <div style={{ color: MUTED, fontSize: '0.65rem', marginTop: 2 }}>{n.source}</div>
+                </div>
+                <div style={{ color: RED, fontWeight: 600 }}>{n.value}</div>
+                <div style={{ color: '#22C55E' }}>{n.threshold} ✓</div>
+                <div>
+                  <div style={{ width: 40, height: 4, background: BORDER, borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ width: `${n.reliability * 100}%`, height: '100%', background: '#22C55E', borderRadius: 2 }} />
+                  </div>
+                  <div style={{ color: MUTED, fontSize: '0.6rem', marginTop: 2, textAlign: 'right' }}>{n.reliability}</div>
+                </div>
+              </div>
+            ))}
+            <div style={{
+              marginTop: 12, padding: '10px 0 0', borderTop: `1px solid ${BORDER}`,
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <span style={{ color: MUTED }}>Composite Graph Confidence</span>
+              <span style={{ color: '#22C55E', fontWeight: 700, fontSize: '1rem' }}>0.94</span>
+            </div>
+            <div style={{ color: MUTED, fontSize: '0.6rem', marginTop: 8 }}>
+              Rule: systemic_carry_unwind | Execution: 0.08ms | Cross-asset: Sentiment × Currency × Breadth × Volatility
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
 /* ───────────────────────── CHART (Section 5) ───────────────────────── */
 function CapitalDefenseChart() {
   const ref = useRef(null);
@@ -440,77 +515,112 @@ export default function Home() {
         </FadeIn>
       </Section>
 
-      {/* ─── SECTION 6: ENTERPRISE AI ─── */}
+      {/* ─── SECTION 6: ENTERPRISE AI — COPILOT MOCKUP ─── */}
       <Section id="s5">
         <FadeIn>
-          <div style={{ textAlign: 'center', maxWidth: 800, marginBottom: 40 }}>
+          <div style={{ textAlign: 'center', maxWidth: 800, marginBottom: 24 }}>
             <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem', color: MUTED, letterSpacing: '0.15em', marginBottom: 16 }}>05 / CSO PLAY</div>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.5rem)', fontWeight: 700, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
-              Standard LLMs Hallucinate.{' '}
-              <span style={{ color: PURPLE }}>Ontos Provides Ground Truth.</span>
+              The Product Your Clients Will Pay{' '}
+              <span style={{ color: PURPLE }}>$20K/Month</span> For
             </h2>
+            <p style={{ color: MUTED, marginTop: 12, fontSize: '0.95rem', lineHeight: 1.6 }}>
+              Standard LLMs hallucinate on financial data. This is the zero-hallucination AI Copilot — powered by your data, verified by Ontos.
+            </p>
           </div>
         </FadeIn>
 
-        {/* Flow diagram */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 900, width: '100%' }}>
-          <FadeIn delay={0.2}>
-            <div style={{ border: `1px solid ${BORDER}`, borderRadius: 8, padding: '24px 28px', textAlign: 'center', minWidth: 160 }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>💬</div>
-              <div style={{ fontWeight: 600 }}>LLM Prompt</div>
-              <div style={{ color: MUTED, fontSize: '0.8rem', marginTop: 4 }}>&ldquo;Is the carry trade unwinding?&rdquo;</div>
+        {/* Chat Interface Mockup */}
+        <FadeIn delay={0.3}>
+          <div style={{
+            maxWidth: 680, width: '100%',
+            border: `1px solid ${BORDER}`, borderRadius: 12,
+            background: 'rgba(15,23,42,0.8)',
+            overflow: 'hidden',
+          }}>
+            {/* Chat header */}
+            <div style={{
+              padding: '14px 20px',
+              borderBottom: `1px solid ${BORDER}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E' }} />
+                <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>SentimenTrader AI Copilot</span>
+              </div>
+              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem', color: MUTED }}>Powered by Ontos</span>
             </div>
-          </FadeIn>
-          <FadeIn delay={0.3}><span style={{ color: PURPLE, fontSize: '1.5rem' }}>→</span></FadeIn>
-          <FadeIn delay={0.4}>
-            <div style={{ border: `1px solid ${PURPLE}`, borderRadius: 8, padding: '24px 28px', textAlign: 'center', minWidth: 200, background: 'rgba(99,102,241,0.05)' }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>⚡</div>
-              <div style={{ fontWeight: 600 }}>Ontos Provenance Engine</div>
-              <div style={{ color: MUTED, fontSize: '0.8rem', marginTop: 4 }}>Semantic topology + rule execution</div>
-            </div>
-          </FadeIn>
-          <FadeIn delay={0.5}><span style={{ color: PURPLE, fontSize: '1.5rem' }}>→</span></FadeIn>
-          <FadeIn delay={0.6}>
-            <div style={{ border: `1px solid #22C55E`, borderRadius: 8, padding: '24px 28px', textAlign: 'center', minWidth: 200 }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>✓</div>
-              <div style={{ fontWeight: 600 }}>Verified Output</div>
-              <div style={{ color: MUTED, fontSize: '0.8rem', marginTop: 4 }}>Mathematically grounded</div>
-            </div>
-          </FadeIn>
-        </div>
 
-        {/* Provenance chain */}
-        <FadeIn delay={0.8}>
-          <div style={{ marginTop: 40, maxWidth: 600, width: '100%' }}>
-            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem', color: MUTED, marginBottom: 12, letterSpacing: '0.1em' }}>PROVENANCE CHAIN</div>
-            {[
-              { source: 'JPY/USD Spot Rate', reliability: 0.99, provider: 'Bloomberg' },
-              { source: 'VIX Term Structure', reliability: 0.97, provider: 'CBOE' },
-              { source: 'Margin Debt (FINRA)', reliability: 0.96, provider: 'FINRA' },
-              { source: 'Smart Money Confidence', reliability: 0.98, provider: 'SentimenTrader' },
-            ].map((s, i) => (
-              <FadeIn key={i} delay={1 + i * 0.15} y={10}>
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '10px 16px', borderBottom: `1px solid ${BORDER}`, fontSize: '0.85rem',
-                }}>
-                  <span>{s.source}</span>
-                  <span style={{ color: MUTED, fontSize: '0.75rem' }}>{s.provider}</span>
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace", color: '#22C55E', fontSize: '0.8rem' }}>{s.reliability}</span>
+            {/* Chat messages */}
+            <div style={{ padding: '20px 20px 8px' }}>
+              {/* User message */}
+              <FadeIn delay={0.5}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+                  <div style={{
+                    background: PURPLE, borderRadius: '12px 12px 2px 12px',
+                    padding: '12px 16px', maxWidth: '85%', fontSize: '0.88rem', lineHeight: 1.5,
+                  }}>
+                    What is our exposure to a Yen carry-trade unwind given current market breadth and retail sentiment?
+                  </div>
                 </div>
               </FadeIn>
-            ))}
-            <FadeIn delay={1.8}>
+
+              {/* AI response */}
+              <FadeIn delay={0.9}>
+                <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 12 }}>
+                  <div style={{
+                    background: 'rgba(30,41,59,0.8)', borderRadius: '12px 12px 12px 2px',
+                    padding: '16px 18px', maxWidth: '90%', fontSize: '0.88rem', lineHeight: 1.7,
+                    border: `1px solid ${BORDER}`,
+                  }}>
+                    <div style={{ marginBottom: 12 }}>
+                      <span style={{ color: RED, fontWeight: 600 }}>⚠ Structural vulnerability detected.</span>
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      The Ontos engine has identified a <strong>systemic carry-trade unwind pattern</strong> across 4 independent signal domains:
+                    </div>
+                    <ul style={{ margin: '8px 0 12px 20px', padding: 0 }}>
+                      <li style={{ marginBottom: 4 }}>Smart Money Confidence at <strong>28%</strong> — below critical threshold</li>
+                      <li style={{ marginBottom: 4 }}>JPY/USD 10-day volatility at <strong>1.8σ</strong> — carry stress confirmed</li>
+                      <li style={{ marginBottom: 4 }}>XLK McClellan Oscillator at <strong>-45</strong> — tech breadth collapsing</li>
+                      <li style={{ marginBottom: 4 }}>VIX term structure <strong>flattening</strong> — hedging demand surging</li>
+                    </ul>
+                    <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
+                      <div style={{ padding: '6px 12px', borderRadius: 6, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', fontSize: '0.8rem' }}>
+                        <span style={{ color: MUTED }}>Action:</span> <span style={{ color: RED, fontWeight: 600 }}>De-gross tech exposure</span>
+                      </div>
+                      <div style={{ padding: '6px 12px', borderRadius: 6, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', fontSize: '0.8rem' }}>
+                        <span style={{ color: MUTED }}>Confidence:</span> <span style={{ color: '#22C55E', fontWeight: 600 }}>94%</span>
+                      </div>
+                    </div>
+
+                    {/* Provenance dropdown */}
+                    <CopilotProvenance />
+                  </div>
+                </div>
+              </FadeIn>
+            </div>
+
+            {/* Chat input */}
+            <div style={{
+              padding: '12px 20px 16px',
+              borderTop: `1px solid ${BORDER}`,
+            }}>
               <div style={{
-                marginTop: 16, padding: '12px 16px', background: 'rgba(34,197,94,0.08)',
-                border: `1px solid rgba(34,197,94,0.2)`, borderRadius: 6,
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                background: 'rgba(30,41,59,0.5)', border: `1px solid ${BORDER}`,
+                borderRadius: 8, padding: '10px 14px', fontSize: '0.85rem', color: MUTED,
               }}>
-                <span style={{ fontWeight: 600 }}>Composite Confidence</span>
-                <span style={{ fontFamily: "'JetBrains Mono', monospace", color: '#22C55E', fontWeight: 700, fontSize: '1.2rem' }}>0.98</span>
+                Ask about portfolio risk, regime shifts, or indicator relationships...
               </div>
-            </FadeIn>
+            </div>
           </div>
+        </FadeIn>
+
+        <FadeIn delay={1.5}>
+          <p style={{ color: MUTED, marginTop: 24, fontSize: '0.85rem', textAlign: 'center', maxWidth: 500 }}>
+            Your data becomes the deterministic ground truth for Wall Street&apos;s AI agents.
+            Not a chatbot — a <span style={{ color: '#22C55E' }}>mathematically verified reasoning engine</span>.
+          </p>
         </FadeIn>
       </Section>
 
