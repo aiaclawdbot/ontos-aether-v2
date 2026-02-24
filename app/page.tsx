@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, useInView } from 'framer-motion';
 
 /* ───────────────────────── CONSTANTS ───────────────────────── */
-const SECTIONS = 8;
+const SECTIONS = 7;
 const PURPLE = '#6366F1';
 const RED = '#EF4444';
 const BG = '#0A0E17';
@@ -624,53 +624,8 @@ export default function Home() {
         </FadeIn>
       </Section>
 
-      {/* ─── SECTION 7: DEMO SCRIPT ─── */}
+      {/* ─── SECTION 7: THE CLOSE ─── */}
       <Section id="s6">
-        <FadeIn>
-          <div style={{ textAlign: 'center', maxWidth: 800, marginBottom: 40 }}>
-            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem', color: MUTED, letterSpacing: '0.15em', marginBottom: 16 }}>06 / LIVE DEMO</div>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', fontWeight: 700, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
-              Demo Choreography
-            </h2>
-          </div>
-        </FadeIn>
-        <div style={{ maxWidth: 650, width: '100%' }}>
-          {[
-            { step: 1, time: '60s', title: 'Vercel UI', talk: '"This is the concept"', desc: 'Walk through the pitch deck interface' },
-            { step: 2, time: '1 min', title: '.onto in IDE', talk: '"This is the language"', desc: 'Show real topology definition syntax' },
-            { step: 3, time: '2 min', title: 'Backtest', talk: '"This is capital defense"', desc: 'Aug 2024 crash — signals vs price action' },
-            { step: 4, time: '2 min', title: 'Provenance', talk: '"This is enterprise AI"', desc: 'LLM query → verified, sourced answer' },
-          ].map((s, i) => (
-            <FadeIn key={i} delay={i * 0.2} y={15}>
-              <div style={{
-                display: 'flex', gap: 20, padding: '20px 0',
-                borderBottom: i < 3 ? `1px solid ${BORDER}` : 'none',
-              }}>
-                <div style={{
-                  fontFamily: "'JetBrains Mono', monospace", fontSize: '1.2rem', fontWeight: 700,
-                  color: PURPLE, minWidth: 32,
-                }}>{s.step}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-                    <span style={{ fontWeight: 600, fontSize: '1rem' }}>{s.title}</span>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", color: MUTED, fontSize: '0.75rem' }}>{s.time}</span>
-                  </div>
-                  <div style={{ color: PURPLE, fontSize: '0.85rem', fontStyle: 'italic', marginBottom: 4 }}>{s.talk}</div>
-                  <div style={{ color: MUTED, fontSize: '0.85rem' }}>{s.desc}</div>
-                </div>
-              </div>
-            </FadeIn>
-          ))}
-        </div>
-        <FadeIn delay={1}>
-          <div style={{ marginTop: 32, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.8rem', color: MUTED }}>
-            Total: ~6 minutes
-          </div>
-        </FadeIn>
-      </Section>
-
-      {/* ─── SECTION 8: THE CLOSE ─── */}
-      <Section id="s7">
         <FadeIn>
           <div style={{ textAlign: 'center', maxWidth: 800 }}>
             <h2 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2.8rem)', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.02em', marginBottom: 24 }}>
