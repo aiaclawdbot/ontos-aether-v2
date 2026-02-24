@@ -148,67 +148,139 @@ function CapitalDefenseChart() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-100px' });
 
-  // Simplified SVG chart
   const w = 700, h = 300;
-  const marketPath = 'M 0 80 L 100 60 L 200 50 L 280 45 L 350 55 L 420 90 L 500 170 L 560 220 L 620 240 L 700 200';
-  const ontosPath = 'M 0 80 L 100 60 L 200 50 L 280 45 L 340 48 L 420 52 L 500 55 L 560 50 L 620 48 L 700 45';
+  const padL = 60, padR = 10, padT = 30, padB = 50;
+  const cW = w - padL - padR, cH = h - padT - padB;
 
-  const events = [
-    { x: 200, label: 'Jul 16', sub: 'ATH', color: '#22C55E' },
-    { x: 300, label: 'Jul 20', sub: 'Early Warning', color: '#EAB308' },
-    { x: 370, label: 'Jul 24', sub: 'Critical Alert', color: RED },
-    { x: 530, label: 'Aug 5', sub: 'Crash', color: RED },
+  // Data: [dayOffset, marketVal, ontosVal] — day 0 = Jul 1, values = portfolio $M
+  const data: [number,number,number][] = [
+    [0,1.000,1.000],[2,1.008,1.008],[4,1.015,1.015],[6,1.020,1.020],
+    [8,1.028,1.028],[10,1.035,1.035],[12,1.042,1.042],[14,1.048,1.048],
+    [16,1.058,1.058], // Jul 16 ATH
+    [18,1.055,1.056],[20,1.052,1.054], // Jul 20 - breadth divergence
+    [22,1.048,1.052],[24,1.035,1.050], // Jul 24 - carry unwind alert
+    [26,1.015,1.048],[28,0.990,1.046],[30,0.972,1.044],
+    [32,0.960,1.043],[34,0.956,1.042], // Aug 5 - VIX 65 crash
+    [36,0.965,1.044],[38,0.978,1.048],[40,0.990,1.052],[42,1.000,1.055],
+    [44,1.008,1.058],[46,1.012,1.060],
+  ];
+
+  const minV = 0.94, maxV = 1.08;
+  const xOf = (d: number) => padL + (d / 46) * cW;
+  const yOf = (v: number) => padT + (1 - (v - minV) / (maxV - minV)) * cH;
+
+  // Build smooth bezier paths
+  const buildPath = (pts: [number,number][]) => {
+    if (pts.length < 2) return '';
+    let d = `M ${pts[0][0]} ${pts[0][1]}`;
+    for (let i = 1; i < pts.length; i++) {
+      const prev = pts[i - 1], cur = pts[i];
+      const cpx1 = prev[0] + (cur[0] - prev[0]) * 0.4;
+      const cpx2 = cur[0] - (cur[0] - prev[0]) * 0.4;
+      d += ` C ${cpx1} ${prev[1]}, ${cpx2} ${cur[1]}, ${cur[0]} ${cur[1]}`;
+    }
+    return d;
+  };
+
+  const marketPts: [number,number][] = data.map(d => [xOf(d[0]), yOf(d[1])]);
+  const ontosPts: [number,number][] = data.map(d => [xOf(d[0]), yOf(d[2])]);
+  const marketPath = buildPath(marketPts);
+  const ontosPath = buildPath(ontosPts);
+  const marketArea = marketPath + ` L ${marketPts[marketPts.length-1][0]} ${padT + cH} L ${marketPts[0][0]} ${padT + cH} Z`;
+  const ontosArea = ontosPath + ` L ${ontosPts[ontosPts.length-1][0]} ${padT + cH} L ${ontosPts[0][0]} ${padT + cH} Z`;
+
+  // Key x positions
+  const xJul16 = xOf(16), xJul20 = xOf(20), xJul24 = xOf(24), xAug5 = xOf(34);
+
+  // Y-axis labels
+  const yLabels = [0.94,0.96,0.98,1.00,1.02,1.04,1.06,1.08];
+  // X-axis dates
+  const xDates: [number,string][] = [[0,'Jul 1'],[8,'Jul 8'],[16,'Jul 16'],[24,'Jul 24'],[32,'Aug 1'],[38,'Aug 8'],[46,'Aug 16']];
+
+  const annotations = [
+    { x: xJul16, label: 'S&P 500 ATH: 5,667', color: '#22C55E', yOff: -8 },
+    { x: xJul20, label: 'Breadth divergence detected', color: '#EAB308', yOff: 8 },
+    { x: xJul24, label: '⚠ Carry unwind alert — de-risk', color: RED, yOff: -8, pulse: true },
+    { x: xAug5, label: 'VIX: 65 — crash', color: RED, yOff: 18 },
   ];
 
   return (
-    <div ref={ref} style={{ width: '100%', maxWidth: 750, margin: '40px auto 0' }}>
-      <svg viewBox={`-20 -10 ${w + 40} ${h + 60}`} style={{ width: '100%' }}>
-        {/* Grid */}
-        {[0, 1, 2, 3, 4].map(i => (
-          <line key={i} x1={0} y1={i * 75} x2={w} y2={i * 75} stroke={BORDER} strokeWidth={0.5} />
+    <div ref={ref} style={{ width: '100%', maxWidth: 780, margin: '40px auto 0' }}>
+      <svg viewBox={`0 0 ${w} ${h + 10}`} style={{ width: '100%' }}>
+        <defs>
+          <linearGradient id="marketGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={RED} stopOpacity={0.25} />
+            <stop offset="100%" stopColor={RED} stopOpacity={0.02} />
+          </linearGradient>
+          <linearGradient id="ontosGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={PURPLE} stopOpacity={0.3} />
+            <stop offset="100%" stopColor={PURPLE} stopOpacity={0.02} />
+          </linearGradient>
+        </defs>
+
+        {/* Grid lines */}
+        {yLabels.map(v => (
+          <line key={v} x1={padL} y1={yOf(v)} x2={w - padR} y2={yOf(v)} stroke={BORDER} strokeWidth={0.5} opacity={0.5} />
         ))}
 
-        {/* Market line */}
-        <motion.path
-          d={marketPath}
-          fill="none"
-          stroke={RED}
-          strokeWidth={2.5}
-          initial={{ pathLength: 0 }}
-          animate={inView ? { pathLength: 1 } : {}}
-          transition={{ duration: 2, ease: 'easeInOut' }}
-        />
-        {/* Ontos line */}
-        <motion.path
-          d={ontosPath}
-          fill="none"
-          stroke={PURPLE}
-          strokeWidth={2.5}
-          initial={{ pathLength: 0 }}
-          animate={inView ? { pathLength: 1 } : {}}
-          transition={{ duration: 2, ease: 'easeInOut', delay: 0.3 }}
-        />
+        {/* Danger zone */}
+        <rect x={xJul24} y={padT} width={xAug5 - xJul24} height={cH} fill={RED} opacity={0.06} rx={2} />
 
-        {/* Event markers */}
-        {events.map((e, i) => (
-          <motion.g
-            key={i}
-            initial={{ opacity: 0 }}
-            animate={inView ? { opacity: 1 } : {}}
-            transition={{ delay: 1 + i * 0.4 }}
-          >
-            <line x1={e.x} y1={0} x2={e.x} y2={h} stroke={e.color} strokeWidth={1} strokeDasharray="4 4" opacity={0.5} />
-            <text x={e.x} y={h + 20} fill={e.color} fontSize={11} textAnchor="middle" fontFamily="'JetBrains Mono', monospace">{e.label}</text>
-            <text x={e.x} y={h + 36} fill={MUTED} fontSize={9} textAnchor="middle" fontFamily="'Inter', sans-serif">{e.sub}</text>
+        {/* Area fills */}
+        <path d={marketArea} fill="url(#marketGrad)" />
+        <path d={ontosArea} fill="url(#ontosGrad)" />
+
+        {/* Lines */}
+        <motion.path d={marketPath} fill="none" stroke={RED} strokeWidth={2} initial={{ pathLength: 0 }} animate={inView ? { pathLength: 1 } : {}} transition={{ duration: 2, ease: 'easeInOut' }} />
+        <motion.path d={ontosPath} fill="none" stroke={PURPLE} strokeWidth={2.5} initial={{ pathLength: 0 }} animate={inView ? { pathLength: 1 } : {}} transition={{ duration: 2, ease: 'easeInOut', delay: 0.3 }} />
+
+        {/* Y-axis labels */}
+        {yLabels.map(v => (
+          <text key={v} x={padL - 6} y={yOf(v) + 4} fill={MUTED} fontSize={9} textAnchor="end" fontFamily="'JetBrains Mono', monospace">
+            ${v.toFixed(2)}M
+          </text>
+        ))}
+
+        {/* X-axis dates */}
+        {xDates.map(([d, label]) => (
+          <text key={d} x={xOf(d)} y={padT + cH + 16} fill={MUTED} fontSize={9} textAnchor="middle" fontFamily="'JetBrains Mono', monospace">{label}</text>
+        ))}
+
+        {/* Annotations */}
+        {annotations.map((a, i) => (
+          <motion.g key={i} initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}} transition={{ delay: 1.2 + i * 0.4 }}>
+            <line x1={a.x} y1={padT} x2={a.x} y2={padT + cH} stroke={a.color} strokeWidth={1} strokeDasharray="3 3" opacity={0.5} />
+            {a.pulse && (
+              <motion.circle cx={a.x} cy={padT + 10} r={5} fill={a.color} opacity={0.7}
+                animate={{ r: [5, 10, 5], opacity: [0.7, 0.2, 0.7] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              />
+            )}
+            <rect x={a.x - 70} y={a.yOff < 0 ? padT - 22 : padT + cH + 20 + (a.yOff - 8)} width={140} height={18} rx={3} fill="rgba(10,14,23,0.85)" stroke={a.color} strokeWidth={0.5} />
+            <text x={a.x} y={a.yOff < 0 ? padT - 9 : padT + cH + 25 + (a.yOff - 8) + 9} fill={a.color} fontSize={8} textAnchor="middle" fontFamily="'JetBrains Mono', monospace" fontWeight={600}>
+              {a.label}
+            </text>
           </motion.g>
         ))}
 
         {/* Legend */}
-        <circle cx={w - 160} cy={15} r={4} fill={PURPLE} />
-        <text x={w - 150} y={19} fill="#FFF" fontSize={11} fontFamily="'Inter', sans-serif">Ontos-guided</text>
-        <circle cx={w - 160} cy={35} r={4} fill={RED} />
-        <text x={w - 150} y={39} fill="#FFF" fontSize={11} fontFamily="'Inter', sans-serif">Standard portfolio</text>
+        <circle cx={padL + 8} cy={padT - 16} r={4} fill={PURPLE} />
+        <text x={padL + 16} y={padT - 12} fill="#E2E8F0" fontSize={10} fontFamily="'Inter', sans-serif">Ontos-guided</text>
+        <circle cx={padL + 120} cy={padT - 16} r={4} fill={RED} />
+        <text x={padL + 128} y={padT - 12} fill="#E2E8F0" fontSize={10} fontFamily="'Inter', sans-serif">Standard portfolio</text>
       </svg>
+
+      {/* Drawdown comparison */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 2.8 }}
+        style={{
+          display: 'flex', justifyContent: 'center', gap: 40, marginTop: 16, padding: '14px 28px',
+          border: `1px solid ${BORDER}`, borderRadius: 8, background: 'rgba(15,23,42,0.6)',
+          fontFamily: "'JetBrains Mono', monospace", fontSize: '0.85rem',
+        }}>
+        <div><span style={{ color: MUTED }}>Standard drawdown: </span><span style={{ color: RED, fontWeight: 700 }}>-9.7%</span></div>
+        <div style={{ color: BORDER }}>|</div>
+        <div><span style={{ color: MUTED }}>Ontos-guided: </span><span style={{ color: '#22C55E', fontWeight: 700 }}>-1.2%</span></div>
+      </motion.div>
     </div>
   );
 }
@@ -438,44 +510,57 @@ export default function Home() {
         </FadeIn>
 
         {/* Pipeline boxes */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1000, width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1100, width: '100%' }}>
           <FadeIn delay={0.2}>
             <div style={{ border: `1px solid ${BORDER}`, borderRadius: 8, padding: '28px 32px', minWidth: 180, textAlign: 'center' }}>
               <div style={{ fontSize: '0.7rem', color: MUTED, fontFamily: "'JetBrains Mono', monospace", marginBottom: 8 }}>INPUT</div>
-              <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>Raw Data</div>
-              <div style={{ color: MUTED, fontSize: '0.8rem', marginTop: 4 }}>20K indicators</div>
+              <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>20,000 Indicators</div>
+              <div style={{ color: MUTED, fontSize: '0.78rem', marginTop: 4 }}>Flat, isolated, tabular</div>
             </div>
           </FadeIn>
           <FadeIn delay={0.3}><span style={{ color: PURPLE, fontSize: '1.5rem' }}>→</span></FadeIn>
           <FadeIn delay={0.4}>
-            <div style={{ border: `1px solid ${PURPLE}`, borderRadius: 8, padding: '20px 24px', minWidth: 280, background: 'rgba(99,102,241,0.05)' }}>
+            <div style={{ border: `1px solid ${PURPLE}`, borderRadius: 8, padding: '20px 24px', minWidth: 340, background: 'rgba(99,102,241,0.05)' }}>
               <div style={{ fontSize: '0.7rem', color: PURPLE, fontFamily: "'JetBrains Mono', monospace", marginBottom: 8 }}>COMPILER</div>
               <div style={{ fontWeight: 600, fontSize: '1.1rem', marginBottom: 12 }}>.onto Compiler</div>
-              <pre style={{
-                fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem', color: '#94A3B8',
-                textAlign: 'left', background: 'rgba(0,0,0,0.3)', padding: 12, borderRadius: 4, lineHeight: 1.6,
+              <div style={{
+                fontFamily: "'JetBrains Mono', monospace", fontSize: '0.68rem',
+                textAlign: 'left', background: 'rgba(0,0,0,0.5)', borderRadius: 6, lineHeight: 1.7,
+                overflow: 'hidden', border: `1px solid ${BORDER}`,
               }}>
-{`topology CarryTradeContagion {
-  node JPY_USD : currency_pair
-  node VIX : volatility_index
-  edge JPY_USD -> VIX : contagion(
-    weight: 0.87,
-    lag: "2d",
-    trigger: threshold(0.65)
-  )
-  rule cascade_alert when
-    propagation_depth > 3
-    AND velocity > 0.4
-}`}
-              </pre>
+                <div style={{ background: 'rgba(99,102,241,0.08)', padding: '6px 12px', fontSize: '0.6rem', color: MUTED, borderBottom: `1px solid ${BORDER}`, letterSpacing: '0.05em' }}>
+                  systemic_carry_unwind.onto
+                </div>
+                <div style={{ padding: '12px 0', display: 'flex' }}>
+                  <div style={{ padding: '0 10px', borderRight: `1px solid ${BORDER}`, color: '#475569', fontSize: '0.62rem', textAlign: 'right', lineHeight: 1.7, userSelect: 'none', minWidth: 28 }}>
+                    {Array.from({length: 14}, (_, i) => <div key={i}>{i + 1}</div>)}
+                  </div>
+                  <pre style={{ margin: 0, padding: '0 12px', lineHeight: 1.7, fontSize: '0.68rem' }}>
+<span style={{ color: '#C084FC' }}>rule</span>{' '}<span style={{ color: '#E2E8F0' }}>systemic_carry_unwind</span>{' '}{'{\n'}
+{'  '}<span style={{ color: '#C084FC' }}>match</span>{' '}<span style={{ color: '#E2E8F0' }}>market</span>{': '}<span style={{ color: '#F59E0B' }}>MarketRegime</span>{'\n'}
+{'  '}<span style={{ color: '#C084FC' }}>where</span>{' '}market.status == <span style={{ color: '#4ADE80' }}>&quot;live&quot;</span>{'\n'}
+{'    '}<span style={{ color: '#C084FC' }}>and</span>{' '}market.sentiment.smart_money{'\n'}
+{'        _confidence &lt; '}<span style={{ color: '#22D3EE' }}>30</span>{'\n'}
+{'    '}<span style={{ color: '#C084FC' }}>and</span>{' '}market.currencies.jpy_usd{'\n'}
+{'        .volatility_index &gt; '}<span style={{ color: '#22D3EE' }}>1.5</span>{'\n'}
+{'    '}<span style={{ color: '#C084FC' }}>and</span>{' '}market.sectors.tech{'\n'}
+{'        .mcclellan_oscillator &lt; '}<span style={{ color: '#22D3EE' }}>-40</span>{'\n'}
+{'  '}<span style={{ color: '#C084FC' }}>then</span>{' {\n'}
+{'    flag: '}<span style={{ color: '#4ADE80' }}>&quot;severe_cross_asset_unwind&quot;</span>{'\n'}
+{'    severity: '}<span style={{ color: '#4ADE80' }}>&quot;critical&quot;</span>{'\n'}
+{'    confidence: '}<span style={{ color: '#E2E8F0' }}>graph_confidence</span>{'()\n'}
+{'  }\n'}
+{'}'}</pre>
+                </div>
+              </div>
             </div>
           </FadeIn>
           <FadeIn delay={0.5}><span style={{ color: PURPLE, fontSize: '1.5rem' }}>→</span></FadeIn>
           <FadeIn delay={0.6}>
             <div style={{ border: `1px solid ${BORDER}`, borderRadius: 8, padding: '28px 32px', minWidth: 180, textAlign: 'center' }}>
               <div style={{ fontSize: '0.7rem', color: MUTED, fontFamily: "'JetBrains Mono', monospace", marginBottom: 8 }}>OUTPUT</div>
-              <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>Executable</div>
-              <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>Intelligence</div>
+              <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>Executable Intelligence</div>
+              <div style={{ color: MUTED, fontSize: '0.78rem', marginTop: 4 }}>Cross-asset reasoning in 0.08ms</div>
             </div>
           </FadeIn>
         </div>
